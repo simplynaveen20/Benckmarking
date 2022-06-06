@@ -38,7 +38,12 @@
         },
         "resultsStorageURL": {
             "type": "string",
-            "defaultValue": "",
+            "metadata": {
+                "description": "description"
+            }
+        },
+       "resultsStorageSASToken": {
+            "type": "securestring",
             "metadata": {
                 "description": "description"
             }
