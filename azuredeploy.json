@@ -4,7 +4,6 @@
     "parameters": {
         "projectName": {
             "type": "string",
-            "defaultValue": "Benchmarking",
             "metadata": {
                 "description": "Specifies a name for generating resource names."
             }
@@ -17,8 +16,7 @@
             }
         },
         "adminUsername": {
-            "type": "string",
-            "defaultValue": "benchmarking",
+            "type": "securestring",
             "metadata": {
                 "description": "Specifies a username for the Virtual Machine."
             }
@@ -36,27 +34,20 @@
                 "description": "description"
             }
         },
-        "resultsStorageURL": {
-            "type": "string",
-            "metadata": {
-                "description": "description"
-            }
-        },
-       "resultsStorageSASToken": {
+        "resultsStorageSASURL": {
             "type": "securestring",
             "metadata": {
                 "description": "description"
             }
         },
         "cosmosURI": {
-            "type": "securestring",
+            "type": "string",      
             "metadata": {
                 "description": "description"
             }
         },
         "cosmosKey": {
-            "type": "string",
-            "defaultValue": "",
+            "type": "securestring",
             "metadata": {
                 "description": "description"
             }
@@ -67,11 +58,11 @@
         },
         "vmScriptExtension": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/"
+            "defaultValue": ""
         },
         "cloudInit": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/cloud-init.txt"
+            "defaultValue": ""
         },
         "itemCountsForWriteOps": {
             "type": "int",
@@ -310,7 +301,7 @@
 
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=',parameters('resultsStorageURL'), ' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',variables('vmName'),'.sh' )]",
+                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',variables('vmName'),'.sh' )]",
                     "fileUris": [ "[concat(parameters('vmScriptExtension'),variables('vmName'),'.sh')]" ]
                 }
             },
