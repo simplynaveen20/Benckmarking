@@ -4,6 +4,7 @@
     "parameters": {
         "projectName": {
             "type": "string",
+            "defaultValue": "Benchmarking",
             "metadata": {
                 "description": "Specifies a name for generating resource names."
             }
@@ -17,6 +18,7 @@
         },
         "adminUsername": {
             "type": "string",
+            "defaultValue": "benchmarking",
             "metadata": {
                 "description": "Specifies a username for the Virtual Machine."
             }
@@ -61,11 +63,11 @@
         },
         "vmScriptExtension": {
             "type": "string",
-            "defaultValue": ""
+            "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/"
         },
         "cloudInit": {
             "type": "string",
-            "defaultValue": ""
+            "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/cloud-init.txt"
         },
         "itemCountsForWriteOps": {
             "type": "int",
