@@ -24,7 +24,7 @@
             }
         },
         "adminPassword": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Specifies a password for the Virtual Machine."
             }
@@ -44,8 +44,7 @@
             }
         },
         "cosmosURI": {
-            "type": "string",
-            "defaultValue": "",
+            "type": "securestring",
             "metadata": {
                 "description": "description"
             }
