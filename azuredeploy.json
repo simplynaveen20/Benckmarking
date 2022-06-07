@@ -301,8 +301,8 @@
 
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',parameters('vmScriptExtension'),'.sh' )]",
-                    "fileUris": [ "[concat(parameters('vmScriptExtension'),'.sh')]" ]
+                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',parameters('vmScriptExtension'))]",
+                    "fileUris": [ "[concat(parameters('vmScriptExtension'))]" ]
                 }
             },
             "copy": {
