@@ -16,7 +16,8 @@
             }
         },
         "adminUsername": {
-            "type": "securestring",
+            "type": "string",
+            "defaultValue": "benchmarking",
             "metadata": {
                 "description": "Specifies a username for the Virtual Machine."
             }
