@@ -56,9 +56,13 @@
             "type": "int",
             "defaultValue": 1
         },
-        "vmScriptExtension": {
+        "vmScriptExtensionScriptURL": {
             "type": "string",
             "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/execute.sh"
+        },
+        "vmScriptExtensionScriptName": {
+        "type": "string",
+        "defaultValue": "execute.sh"
         },
         "cloudInit": {
             "type": "string",
@@ -301,8 +305,8 @@
 
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',parameters('vmScriptExtension'))]",
-                    "fileUris": [ "[concat(parameters('vmScriptExtension'))]" ]
+                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',parameters('vmScriptExtensionScriptName'))]",
+                    "fileUris": [ "[concat(parameters('vmScriptExtensionScriptURL'))]" ]
                 }
             },
             "copy": {
