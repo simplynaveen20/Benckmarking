@@ -17,10 +17,24 @@ wget https://aka.ms/downloadazcopy-v10-linux
 tar -xvf downloadazcopy-v10-linux
 sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 
+#Build YCSB from source and create a docker container
+echo "Cloning YCSB repository"
+git clone -b addingDockerScripts --single-branch https://github.com/simplynaveen20/YCSB.git
+cd  YCSB
+eco "Building YCSB"
+mvn -pl site.ycsb:azurecosmos-binding -am clean package
+cp -r  ./azurecosmos/target/ /tmp/ycsb
+cp -r ./azurecosmos/conf/* /tmp/ycsb
+cd /tmp/ycsb/
+echo "Extracting YCSB binary"
+tar xfvz ycsb-azurecosmos-binding-0.18
+echo "Creating YCSB docker image"
+docker build . -t ycsb-cosmos
+
 #Execute YCSB test
 echo "########## Executing YCSB tests###########"
 sudo az acr login --name benchmarkingacr -u benchmarkingacr -p 8cEvIvrwkdndY1MyM9zBsDNpu05E=nli
-sudo docker run -dit -e uri="$COSMOS_URI" -e primaryKey="$COSMOS_KEY" -e workload_type=workloadc -e ycsb_operation=load -e recordcount=$recordcount -e insertstart=$insertstart -e insertcount=$ITEM_COUNT_FOR_WRITE -e operationcount=2 -e threads=1 -e target=1 --name client1 benchmarkingacr.azurecr.io/ycsb-cosmos
+sudo docker run -dit -e uri="$COSMOS_URI" -e primaryKey="$COSMOS_KEY" -e workload_type=workloadc -e ycsb_operation=load -e recordcount=$recordcount -e insertstart=$insertstart -e insertcount=$ITEM_COUNT_FOR_WRITE -e operationcount=2 -e threads=1 -e target=1 --name ycsb-cosmos
 sudo docker wait client1
 
 #Copy YCSB log to storage account 
