@@ -27,7 +27,7 @@ cp -r  ./azurecosmos/target/ /tmp/ycsb
 cp -r ./azurecosmos/conf/* /tmp/ycsb
 cd /tmp/ycsb/
 echo "########## Extracting YCSB binary ##########"
-tar xfvz ycsb-azurecosmos-binding-0.18
+tar xfvz ycsb-azurecosmos-binding-0.18.0-SNAPSHOT.tar.gz
 echo "########## Creating YCSB docker image ##########"
 docker build . -t ycsb-cosmos
 
