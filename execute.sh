@@ -26,7 +26,7 @@ mvn -pl site.ycsb:azurecosmos-binding -am clean package
 cp -r  ./azurecosmos/target/ /tmp/ycsb
 cp -r ./azurecosmos/conf/* /tmp/ycsb
 cd /tmp/ycsb/
-echo "########## Extracting YCSB binary ##########"
+echo "########## Extracting YCSB ##########"
 tar xfvz ycsb-azurecosmos-binding-0.18.0-SNAPSHOT.tar.gz
 cp ./run.sh ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 cp ./azurecosmos.properties ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
