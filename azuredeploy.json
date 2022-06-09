@@ -43,7 +43,7 @@
             }
         },
         "cosmosURI": {
-            "type": "string",      
+            "type": "string",
             "metadata": {
                 "description": "description"
             }
@@ -58,21 +58,45 @@
             "type": "int",
             "defaultValue": 1
         },
+        "workloadType": {
+            "type": "string",
+            "defaultValue": "workloadc"
+        },
+        "ycsbOperation": {
+            "type": "string",
+            "defaultValue": "load"
+        },
+        "threads": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "targetOperationsPerSecond": {
+            "type": "int",
+            "defaultValue": 2
+        },
+        "itemCountsForWriteOps": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "ycsbGitRepositoryURL": {
+            "type": "string",
+            "defaultValue": "https://github.com/simplynaveen20/YCSB.git"
+        },
+        "ycsbGitBranchName": {
+            "type": "string",
+            "defaultValue": "addingDockerScripts"
+        },
         "vmScriptExtensionScriptURL": {
             "type": "string",
             "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/execute.sh"
         },
         "vmScriptExtensionScriptName": {
-        "type": "string",
-        "defaultValue": "execute.sh"
+            "type": "string",
+            "defaultValue": "execute.sh"
         },
         "cloudInit": {
             "type": "string",
             "defaultValue": "https://raw.githubusercontent.com/RaviTella/Benckmarking/main/cloud-init.txt"
-        },
-        "itemCountsForWriteOps": {
-            "type": "int",
-            "defaultValue": 1
         }
     },
     "variables": {
@@ -304,10 +328,9 @@
                 "typeHandlerVersion": "2.1",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',parameters('vmScriptExtensionScriptName'))]",
+                    "commandToExecute": "[concat('YCSB_GIT_REPO_URL=',parameters('ycsbGitRepositoryURL'),' ','YCSB_GIT_BRANCH_NAME=',parameters('ycsbGitBranchName'),' ','TARGET_OPERATIONS_PER_SECOND=',parameters('targetOperationsPerSecond'),' ','THREAD_COUNT=',parameters('threads'),' ','YCSB_OPERATION=',parameters('ycsbOperation'),' ','WORKLOAD_TYPE=',parameters('workloadType'),' ','VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_URL=','\"',parameters('resultsStorageSASURL'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','ITEM_COUNT_FOR_WRITE=',parameters('itemCountsForWriteOps'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'sh ',parameters('vmScriptExtensionScriptName'))]",
                     "fileUris": [ "[concat(parameters('vmScriptExtensionScriptURL'))]" ]
                 }
             },
