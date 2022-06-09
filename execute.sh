@@ -36,7 +36,7 @@ echo "########## Executing YCSB tests###########"
 #sudo az acr login --name benchmarkingacr -u benchmarkingacr -p 8cEvIvrwkdndY1MyM9zBsDNpu05E=nli
 #sudo docker run -dit -e uri="$COSMOS_URI" -e primaryKey="$COSMOS_KEY" -e workload_type=workloadc -e ycsb_operation=load -e recordcount=$recordcount -e insertstart=$insertstart -e insertcount=$ITEM_COUNT_FOR_WRITE -e operationcount=2 -e threads=1 -e target=1 --name client1 ycsb-cosmos
 uri="$COSMOS_URI" primaryKey="$COSMOS_KEY" workload_type=workloadc ycsb_operation=load recordcount=$recordcount insertstart=$insertstart insertcount=$ITEM_COUNT_FOR_WRITE operationcount=2 threads=1 target=1 sh run.sh
-sudo docker wait client1
+#sudo docker wait client1
 
 #Copy YCSB log to storage account 
 echo "########## Copying Results to Storage ###########"
