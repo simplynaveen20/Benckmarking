@@ -31,17 +31,12 @@ tar xfvz ycsb-azurecosmos-binding-0.18.0-SNAPSHOT.tar.gz
 cp ./run.sh ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 cp ./azurecosmos.properties ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 cd ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
-#echo "########## Creating YCSB docker image ##########"
-#docker build . -t ycsb-cosmos
 
 #Execute YCSB test
 echo "########## Executing YCSB tests###########"
-#sudo az acr login --name benchmarkingacr -u benchmarkingacr -p 8cEvIvrwkdndY1MyM9zBsDNpu05E=nli
-#sudo docker run -dit -e uri="$COSMOS_URI" -e primaryKey="$COSMOS_KEY" -e workload_type=workloadc -e ycsb_operation=load -e recordcount=$recordcount -e insertstart=$insertstart -e insertcount=$ITEM_COUNT_FOR_WRITE -e operationcount=2 -e threads=1 -e target=1 --name client1 ycsb-cosmos
 uri="$COSMOS_URI" primaryKey="$COSMOS_KEY" workload_type=workloadc ycsb_operation=load recordcount=$recordcount insertstart=$insertstart insertcount=$ITEM_COUNT_FOR_WRITE operationcount=2 threads=1 target=1 sh run.sh
-#sudo docker wait client1
 
 #Copy YCSB log to storage account 
 echo "########## Copying Results to Storage ###########"
-#sudo docker cp client1:/tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb.log"
-#sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
+cp /tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb.log"
+sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
