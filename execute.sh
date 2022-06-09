@@ -28,8 +28,8 @@ cp -r ./azurecosmos/conf/* /tmp/ycsb
 cd /tmp/ycsb/
 echo "########## Extracting YCSB binary ##########"
 tar xfvz ycsb-azurecosmos-binding-0.18.0-SNAPSHOT.tar.gz
-echo "########## Creating YCSB docker image ##########"
-docker build . -t ycsb-cosmos
+#echo "########## Creating YCSB docker image ##########"
+#docker build . -t ycsb-cosmos
 
 #Execute YCSB test
 echo "########## Executing YCSB tests###########"
@@ -40,5 +40,5 @@ uri="$COSMOS_URI" primaryKey="$COSMOS_KEY" workload_type=workloadc ycsb_operatio
 
 #Copy YCSB log to storage account 
 echo "########## Copying Results to Storage ###########"
-sudo docker cp client1:/tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb.log"
-sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
+#sudo docker cp client1:/tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb.log"
+#sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
