@@ -2,3 +2,4 @@
 package_upgrade: true
 packages:
   - maven
+  - python3.10
