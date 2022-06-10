@@ -1,7 +1,11 @@
 #!/bin/sh
-echo "########## Sleeping to wait for Automatic Upgrades complete ###########"
-sleep 180
-echo "########## Awoke! Ready to procees with the Script ###########"
+#echo "########## Sleeping to wait for Automatic Upgrades complete ###########"
+#sleep 180
+#echo "########## Awoke! Ready to procees with the Script ###########"
+
+cloud-init status --wait  > /dev/null 2>&1
+[ $? -ne 0 ] && echo 'Cloud-init failed' && exit 1
+echo 'Cloud-init succeeded at ' `date -R`  > /tmp/cloud-init/post-cloud-init.log
 
 echo "##########Storage SAS###########: $RESULT_STORAGE_URL"
 echo "##########VM Name###########: $VM_NAME"
