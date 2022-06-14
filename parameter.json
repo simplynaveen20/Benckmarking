@@ -17,14 +17,17 @@
     "vmCount": {
       "value": 1
     },
-    "itemCountsForWriteOps": {
+    "itemCountForWriteOps": {
+      "value": 1
+    },
+	"ycsbOperationCount": {
       "value": 1
     },
 	"threads": {
       "value": 1
     },
-	"itemCountsForWriteOps": {
-      "value": 1
+	"targetOperationsPerSecond": {
+       "value": 1
     }
   }
 }
