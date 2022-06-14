@@ -20,14 +20,14 @@
     "itemCountForWriteOps": {
       "value": 1
     },
-	"ycsbOperationCount": {
+    "ycsbOperationCount": {
       "value": 1
     },
-	"threads": {
+    "threads": {
       "value": 1
     },
-	"targetOperationsPerSecond": {
-       "value": 1
+    "targetOperationsPerSecond": {
+      "value": 1
     }
   }
 }
