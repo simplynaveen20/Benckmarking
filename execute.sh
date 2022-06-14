@@ -52,8 +52,8 @@ uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operati
 if [ "$YCSB_OPERATION" = "run" ]; then
   # Clearing log file from above load operation  
   sudo rm -f /tmp/ycsb.log
-  # Waiting for 5 seconds, to make sure previous load is replicated to all replicas to avoid 404, as these operations run on different cosmos client
-  sleep 5s
+  # Waiting for 2 minutes, so all the VMs load phase finished before we start run operation 
+  sleep 2m
   uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
 fi
 
@@ -65,7 +65,7 @@ sudo azcopy copy "$VM_NAME-ycsb.csv" "$RESULT_STORAGE_URL"
 sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
-  echo "Sleeping on VM1 for 5 min"
+  echo "Waiting on VM1 for 5 min"
   sleep 5m
   cd /home/benchmarking
   mkdir "aggregation"
