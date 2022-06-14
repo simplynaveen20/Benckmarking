@@ -10,7 +10,6 @@ echo "##########VM Name###########: $VM_NAME"
 echo "##########ITEM_COUNT_FOR_WRITE###########: $ITEM_COUNT_FOR_WRITE"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
 echo "##########YCSB_OPERATION_COUNT###########: $YCSB_OPERATION_COUNT"
-echo "##########YCSB_OPERATION###########: $YCSB_OPERATION"
 
 insertstart=$((ITEM_COUNT_FOR_WRITE* (MACHINE_INDEX-1)))
 recordcount=$((ITEM_COUNT_FOR_WRITE* MACHINE_INDEX))
@@ -51,7 +50,8 @@ uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operati
 if [ "$YCSB_OPERATION" = "run" ]; then
   # Clearing log file from above load operation  
   sudo rm -f /tmp/ycsb.log
-  echo "########## Inside RUN ###########"
+  # Waiting for 5 seconds, to make sure previous load is replicated to all replicas to avoid 404, as these operations run on different cosmos client
+  sleep 5s
   uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$recordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
 fi
 
