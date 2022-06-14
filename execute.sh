@@ -9,6 +9,7 @@ echo "##########Storage SAS###########: $RESULT_STORAGE_URL"
 echo "##########VM Name###########: $VM_NAME"
 echo "##########ITEM_COUNT_FOR_WRITE###########: $ITEM_COUNT_FOR_WRITE"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
+echo "##########YCSB_OPERATION_COUNT###########: $YCSB_OPERATION_COUNT"
 
 insertstart=$((ITEM_COUNT_FOR_WRITE* (MACHINE_INDEX-1)))
 recordcount=$((ITEM_COUNT_FOR_WRITE* MACHINE_INDEX))
@@ -45,6 +46,12 @@ cd ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 echo "########## Executing YCSB tests ###########"
 uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$recordcount insertstart=$insertstart insertcount=$ITEM_COUNT_FOR_WRITE threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
 
+if [ $YCSB_OPERATION == "run" ]; then
+  # Clearing log file from above load operation  
+  sudo rm -f /tmp/ycsb.log
+  echo "########## Inside RUN ###########"
+  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$recordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
+fi  
 
 #Copy YCSB log to storage account 
 echo "########## Copying Results to Storage ###########"
