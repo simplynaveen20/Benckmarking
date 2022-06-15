@@ -9,9 +9,12 @@ echo "##########Storage SAS###########: $RESULT_STORAGE_URL"
 echo "##########VM Name###########: $VM_NAME"
 echo "##########ITEM_COUNT_FOR_WRITE###########: $ITEM_COUNT_FOR_WRITE"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
+echo "##########YCSB_OPERATION_COUNT###########: $YCSB_OPERATION_COUNT"
+echo "##########VM_COUNT###########: $VM_COUNT"
 
 insertstart=$((ITEM_COUNT_FOR_WRITE* (MACHINE_INDEX-1)))
 recordcount=$((ITEM_COUNT_FOR_WRITE* MACHINE_INDEX))
+totalrecordcount=$((ITEM_COUNT_FOR_WRITE* VM_COUNT))
 
 
 #Install Software
@@ -41,10 +44,21 @@ cp ./converting_log_to_csv.py ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 cd ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 
 
-#Execute YCSB test
-echo "########## Executing YCSB tests ###########"
-uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$recordcount insertstart=$insertstart insertcount=$ITEM_COUNT_FOR_WRITE threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
+##Load operation for YCSB tests
+echo "########## Load operation for YCSB tests ###########"
+uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="load" recordcount=$recordcount insertstart=$insertstart insertcount=$ITEM_COUNT_FOR_WRITE threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
 
+#Execute YCSB test
+if [ "$YCSB_OPERATION" = "run" ]; then
+  cp /tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb-load.log"
+  sudo azcopy copy /home/benchmarking/"$VM_NAME-ycsb-load.log" "$RESULT_STORAGE_URL"
+  # Clearing log file from above load operation  
+  sudo rm -f /tmp/ycsb.log
+  sudo rm -f "/home/benchmarking/$VM_NAME-ycsb-load.log"
+  # Waiting for 2 minutes, so all the VMs load phase finished before we start run operation 
+  sleep 2m
+  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
+fi
 
 #Copy YCSB log to storage account 
 echo "########## Copying Results to Storage ###########"
@@ -54,7 +68,7 @@ sudo azcopy copy "$VM_NAME-ycsb.csv" "$RESULT_STORAGE_URL"
 sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
-  echo "Sleeping on VM1 for 5 min"
+  echo "Waiting on VM1 for 5 min"
   sleep 5m
   cd /home/benchmarking
   mkdir "aggregation"
