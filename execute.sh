@@ -50,11 +50,11 @@ uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operati
 
 #Execute YCSB test
 if [ "$YCSB_OPERATION" = "run" ]; then
-  cp /tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb-load.log"
-  sudo azcopy copy /home/benchmarking/"$VM_NAME-ycsb-load.log" "$RESULT_STORAGE_URL"
+  cp /tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb-load.txt"
+  sudo azcopy copy /home/benchmarking/"$VM_NAME-ycsb-load.txt" "$RESULT_STORAGE_URL"
   # Clearing log file from above load operation  
   sudo rm -f /tmp/ycsb.log
-  sudo rm -f "/home/benchmarking/$VM_NAME-ycsb-load.log"
+  sudo rm -f "/home/benchmarking/$VM_NAME-ycsb-load.txt"
   # Waiting for 2 minutes, so all the VMs load phase finished before we start run operation 
   sleep 2m
   uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND sh run.sh
