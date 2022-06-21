@@ -5,7 +5,7 @@
 
 cloud-init status --wait
 
-echo "##########Storage SAS###########: $RESULT_STORAGE_URL"
+echo "##########STORAGE CONNECTION STRING###########: $RESULT_STORAGE_CONNECTION_STRING"
 echo "##########VM Name###########: $VM_NAME"
 echo "##########ITEM_COUNT_FOR_WRITE###########: $ITEM_COUNT_FOR_WRITE"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
@@ -43,6 +43,25 @@ cp ./aggregate_multiple_file_results.py ./ycsb-azurecosmos-binding-0.18.0-SNAPSH
 cp ./converting_log_to_csv.py ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 cd ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 
+## Creating SAS URL for result storage container
+echo "########## Creating SAS URL for result storage container ###########"
+end=`date -u -d "30 minutes" '+%Y-%m-%dT%H:%MZ'`
+current_time="$(date '+%Y-%m-%d-%Hh%Mm%Ss')"
+az storage container create -n "result-$current_time" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+
+sas=`az storage container generate-sas -n "result-$current_time" --connection-string $RESULT_STORAGE_CONNECTION_STRING --https-only --permissions dlrw --expiry $end -o tsv`
+
+arr_connection=(${RESULT_STORAGE_CONNECTION_STRING//;/ })
+
+protocol_string=${arr_connection[0]}
+arr_protocol_string=(${protocol_string//=/ })
+protocol=${arr_protocol_string[1]}
+
+account_string=${arr_connection[1]}
+arr_account_string=(${account_string//=/ })
+account_name=${arr_account_string[1]}
+
+RESULT_STORAGE_URL="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
 ##Load operation for YCSB tests
 echo "########## Load operation for YCSB tests ###########"
