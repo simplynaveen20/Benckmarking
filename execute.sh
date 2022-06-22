@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #echo "########## Sleeping to wait for Automatic Upgrades complete ###########"
 #sleep 180
 #echo "########## Awoke! Ready to procees with the Script ###########"
@@ -24,7 +25,7 @@ tar -xvf downloadazcopy-v10-linux
 sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 
 
-#Build YCSB from source and create a docker container
+#Build YCSB from source
 echo "##########Cloning YCSB ##########"
 git clone -b "$YCSB_GIT_BRANCH_NAME" --single-branch "$YCSB_GIT_REPO_URL"
 
@@ -88,7 +89,7 @@ sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
-  sleep 5m
+  sleep 5s
   cd /home/benchmarking
   mkdir "aggregation"
   cd aggregation
