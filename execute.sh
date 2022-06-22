@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #echo "########## Sleeping to wait for Automatic Upgrades complete ###########"
 #sleep 180
 #echo "########## Awoke! Ready to procees with the Script ###########"
@@ -45,7 +45,7 @@ cd ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 
 ## Creating SAS URL for result storage container
 echo "########## Creating SAS URL for result storage container ###########"
-end=`date -u -d "30 minutes" '+%Y-%m-%dT%H:%MZ'`
+end=`date -u -d "180 minutes" '+%Y-%m-%dT%H:%MZ'`
 current_time="$(date '+%Y-%m-%d-%Hh%Mm%Ss')"
 az storage container create -n "result-$current_time" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 
