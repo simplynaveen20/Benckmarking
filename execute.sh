@@ -89,7 +89,7 @@ sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
-  sleep 5s
+  sleep 5m
   cd /home/benchmarking
   mkdir "aggregation"
   cd aggregation
