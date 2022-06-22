@@ -5,7 +5,7 @@
     "adminPassword": {
       "value": ""
     },
-    "resultsStorageSASURL": {
+    "resultsStorageConnectionString": {
       "value": ""
     },
     "cosmosURI": {
