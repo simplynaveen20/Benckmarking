@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #echo "########## Sleeping to wait for Automatic Upgrades complete ###########"
 #sleep 180
 #echo "########## Awoke! Ready to procees with the Script ###########"
