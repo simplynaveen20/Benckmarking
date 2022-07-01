@@ -45,7 +45,7 @@ cd ./ycsb-azurecosmos-binding-0.18.0-SNAPSHOT
 if [ $MACHINE_INDEX -eq 1 ]; then
   table_exist=$(az storage table exists --name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING | jq '.exists')
   if [ "$table_exist" = true ]; then
-    echo "$table_exist already true"
+    echo "${DEPLOYMENT_NAME}Metadata already exists"
   else
     az storage table create --name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
   fi
@@ -71,10 +71,10 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
   client_start_time=$(date -u -d "3 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
-  az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${UNIQUE_STRING}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${GUID}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 3); do
-    table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${DEPLOYMENT_NAME}_${UNIQUE_STRING}" --row-key "ycsb_sql")
+    table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${DEPLOYMENT_NAME}_${GUID}" --row-key "ycsb_sql")
     if [ -z "$table_entry" ]; then
       echo "sleeping for 1 min, table row not availble yet"
       sleep 1m
