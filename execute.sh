@@ -6,8 +6,8 @@
 cloud-init status --wait
 
 echo "##########DEPLOYMENT_NAME###########: $DEPLOYMENT_NAME"
-echo "##########Storage SAS###########: $RESULT_STORAGE_URL"
-echo "##########VM Name###########: $VM_NAME"
+echo "##########STORAGE CONNECTION STRING###########: $STORAGE CONNECTION STRING"
+echo "##########VM NAME###########: $VM_NAME"
 echo "##########ITEM_COUNT_FOR_WRITE###########: $ITEM_COUNT_FOR_WRITE"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
 echo "##########YCSB_OPERATION_COUNT###########: $YCSB_OPERATION_COUNT"
@@ -68,10 +68,10 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   arr_account_string=(${account_string//=/ })
   account_name=${arr_account_string[1]}
 
-  RESULT_STORAGE_URL="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
+  result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
   client_start_time=$(date -u -d "3 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
-  az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${UNIQUE_STRING}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$RESULT_STORAGE_URL --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${UNIQUE_STRING}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 3); do
     table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${DEPLOYMENT_NAME}_${UNIQUE_STRING}" --row-key "ycsb_sql")
@@ -81,17 +81,19 @@ else
       continue
     fi
     client_start_time=$(echo $table_entry | jq .ClientStartTime)
-    RESULT_STORAGE_URL=$(echo $table_entry | jq .SAS_URL)
+    result_storage_url=$(echo $table_entry | jq .SAS_URL)
     break
   done
-  if [ -z "$client_start_time" ] || [ -z "$RESULT_STORAGE_URL" ]; then
-    echo "Error while getting client_start_time/RESULT_STORAGE_URL, exiting from this machine"
+  if [ -z "$client_start_time" ] || [ -z "$result_storage_url" ]; then
+    echo "Error while getting client_start_time/result_storage_url, exiting from this machine"
     exit 1
   fi
 fi
-## Removing quotes from the client_start_time and convertiing it into seconds
+## Removing quotes from the client_start_time and converting it into seconds
 client_start_time=$(echo "$client_start_time" | tr -d '"')
 client_start_time=$(date -d "$client_start_time" +'%s')
+## Removing quotes from the result_storage_url
+result_storage_url=$(echo "$result_storage_url" | tr -d '"')
 
 ## If it is load operation sync the clients start time
 if [ "$YCSB_OPERATION" = "load" ]; then
@@ -120,7 +122,7 @@ if [ "$YCSB_OPERATION" = "run" ]; then
     echo "Not sleeping on clients sync time $client_start_time as it already past"
   fi
   cp /tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb-load.txt"
-  sudo azcopy copy /home/benchmarking/"$VM_NAME-ycsb-load.txt" "$RESULT_STORAGE_URL"
+  sudo azcopy copy /home/benchmarking/"$VM_NAME-ycsb-load.txt" "$result_storage_url"
   # Clearing log file from above load operation
   sudo rm -f /tmp/ycsb.log
   sudo rm -f "/home/benchmarking/$VM_NAME-ycsb-load.txt"
@@ -131,8 +133,8 @@ fi
 echo "########## Copying Results to Storage ###########"
 cp /tmp/ycsb.log /home/benchmarking/"$VM_NAME-ycsb.log"
 sudo python3 converting_log_to_csv.py /home/benchmarking/"$VM_NAME-ycsb.log"
-sudo azcopy copy "$VM_NAME-ycsb.csv" "$RESULT_STORAGE_URL"
-sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$RESULT_STORAGE_URL"
+sudo azcopy copy "$VM_NAME-ycsb.csv" "$result_storage_url"
+sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
@@ -140,12 +142,12 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   cd /home/benchmarking
   mkdir "aggregation"
   cd aggregation
-  index_for_regex=$(expr index "$RESULT_STORAGE_URL" '?')
+  index_for_regex=$(expr index "$result_storage_url" '?')
   regex_to_append="/*"
-  url_first_part=$(echo $RESULT_STORAGE_URL | cut -c 1-$((index_for_regex - 1)))
-  url_second_part=$(echo $RESULT_STORAGE_URL | cut -c $((index_for_regex))-${#RESULT_STORAGE_URL})
+  url_first_part=$(echo $result_storage_url | cut -c 1-$((index_for_regex - 1)))
+  url_second_part=$(echo $result_storage_url | cut -c $((index_for_regex))-${#result_storage_url})
   new_storage_url="$url_first_part$regex_to_append$url_second_part"
   sudo azcopy copy $new_storage_url '/home/benchmarking/aggregation' --recursive=true
   sudo python3 /tmp/ycsb/ycsb-azurecosmos-binding-0.18.0-SNAPSHOT/aggregate_multiple_file_results.py /home/benchmarking/aggregation
-  sudo azcopy copy aggregation.csv "$RESULT_STORAGE_URL"
+  sudo azcopy copy aggregation.csv "$result_storage_url"
 fi
