@@ -71,7 +71,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
   client_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
-  az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${GUID}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${GUID}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url JobStatus="Started" --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 5); do
     table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${DEPLOYMENT_NAME}_${GUID}" --row-key "ycsb_sql")
@@ -150,4 +150,5 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   sudo azcopy copy $new_storage_url '/home/benchmarking/aggregation' --recursive=true
   sudo python3 /tmp/ycsb/ycsb-azurecosmos-binding-0.18.0-SNAPSHOT/aggregate_multiple_file_results.py /home/benchmarking/aggregation
   sudo azcopy copy aggregation.csv "$result_storage_url"
+  az storage entity replace --entity PartitionKey="${DEPLOYMENT_NAME}_${GUID}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url JobStatus="Finised" --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 fi
