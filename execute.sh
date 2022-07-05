@@ -70,10 +70,10 @@ if [ $MACHINE_INDEX -eq 1 ]; then
 
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
-  client_start_time=$(date -u -d "3 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
+  client_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
   az storage entity insert --entity PartitionKey="${DEPLOYMENT_NAME}_${GUID}" RowKey="ycsb_sql" ClientStartTime=$client_start_time SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
-  for i in $(seq 1 3); do
+  for i in $(seq 1 5); do
     table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${DEPLOYMENT_NAME}_${GUID}" --row-key "ycsb_sql")
     if [ -z "$table_entry" ]; then
       echo "sleeping for 1 min, table row not availble yet"
@@ -100,7 +100,7 @@ if [ "$YCSB_OPERATION" = "load" ]; then
   now=$(date +"%s")
   wait_interval=$(($client_start_time - $now))
   if [ $wait_interval -gt 0 ]; then
-    echo "Sleeping for $wait_interval second to sync the other clients"
+    echo "Sleeping for $wait_interval second to sync with other clients"
     sleep $wait_interval
   else
     echo "Not sleeping on clients sync time $client_start_time as it already past"
@@ -116,7 +116,7 @@ if [ "$YCSB_OPERATION" = "run" ]; then
   now=$(date +"%s")
   wait_interval=$(($client_start_time - $now))
   if [ $wait_interval -gt 0 ]; then
-    echo "Sleeping for $wait_interval second to sync the other clients"
+    echo "Sleeping for $wait_interval second to sync with other clients"
     sleep $wait_interval
   else
     echo "Not sleeping on clients sync time $client_start_time as it already past"
@@ -138,7 +138,7 @@ sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
-  sleep 2m
+  sleep 5m
   cd /home/benchmarking
   mkdir "aggregation"
   cd aggregation

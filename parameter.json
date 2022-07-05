@@ -5,7 +5,7 @@
     "adminPassword": {
       "value": ""
     },
-    "resultsStorageSASURL": {
+    "resultsStorageConnectionString": {
       "value": ""
     },
     "cosmosURI": {
@@ -28,6 +28,9 @@
     },
     "targetOperationsPerSecond": {
       "value": 1
+    },
+	"ycsbOperation": {
+      "value": "load"
     }
   }
 }
