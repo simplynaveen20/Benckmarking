@@ -159,7 +159,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   etag=${etag:1:-1}
   etag=$(echo "$etag" | tr -d '\')
   no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
-  no_of_clients_completed=${no_of_clients_completed:1:-1}
+  no_of_clients_completed=$(echo "$no_of_clients_completed" | tr -d '"')
   no_of_clients_completed=$((no_of_clients_completed + 1))
   echo "Updating latest table entry with incremented NoOfClientsCompleted"
   az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
@@ -171,8 +171,8 @@ else
     etag=${etag:1:-1}
     etag=$(echo "$etag" | tr -d '\')
     no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
+    no_of_clients_completed=$(echo "$no_of_clients_completed" | tr -d '"')
     no_of_clients_completed=$((no_of_clients_completed + 1))
-    #Updating the table entry to increment NoOfClientsCompleted
     echo "Updating latest table entry with incremented NoOfClientsCompleted"
     replace_entry_result=$(az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag)
     if [ -z "$replace_entry_result" ]; then
