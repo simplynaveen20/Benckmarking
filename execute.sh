@@ -88,12 +88,13 @@ else
     echo "Error while getting client_start_time/result_storage_url, exiting from this machine"
     exit 1
   fi
+
+  ## Removing quotes from the client_start_time and result_storage_url retrieved from table
+  client_start_time=${client_start_time:1:-1}
+  result_storage_url=${result_storage_url:1:-1}
 fi
-## Removing quotes from the client_start_time and converting it into seconds
-client_start_time=${client_start_time:1:-1}
+## converting client_start_time into seconds
 client_start_time=$(date -d "$client_start_time" +'%s')
-## Removing quotes from the result_storage_url
-result_storage_url=${result_storage_url:1:-1}
 
 ## If it is load operation sync the clients start time
 if [ "$YCSB_OPERATION" = "load" ]; then
@@ -150,7 +151,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   sudo azcopy copy $new_storage_url '/home/benchmarking/aggregation' --recursive=true
   sudo python3 /tmp/ycsb/ycsb-azurecosmos-binding-0.18.0-SNAPSHOT/aggregate_multiple_file_results.py /home/benchmarking/aggregation
   sudo azcopy copy aggregation.csv "$result_storage_url"
-  
+
   #Updating the table entry to change JobStatus to Finished and increment NoOfClientsCompleted
   latest_table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${GUID}" --row-key "ycsb_sql")
   etag=$(echo $latest_table_entry | jq .etag)
@@ -159,7 +160,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
   no_of_clients_completed=${no_of_clients_completed:1:-1}
   no_of_clients_completed=$((no_of_clients_completed + 1))
-  az storage entity replace --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
+  az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
 else
   for i in $(seq 1 5); do
     latest_table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${GUID}" --row-key "ycsb_sql")
@@ -167,10 +168,9 @@ else
     etag=${etag:1:-1}
     etag=$(echo "$etag" | tr -d '\')
     no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
-    no_of_clients_completed=${no_of_clients_completed:1:-1}
     no_of_clients_completed=$((no_of_clients_completed + 1))
-	#Updating the table entry to increment NoOfClientsCompleted
-    replace_entry_result=$(az storage entity replace --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag)
+    #Updating the table entry to increment NoOfClientsCompleted
+    replace_entry_result=$(az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag)
     if [ -z "$replace_entry_result" ]; then
       echo "Hit race condition on table entry for updating no_of_clients_completed count"
       sleep 1s
