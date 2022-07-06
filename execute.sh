@@ -164,7 +164,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Updating latest table entry with incremented NoOfClientsCompleted"
   az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="${GUID}" RowKey="ycsb_sql" JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
 else
-  for j in $(seq 1 5); do
+  for j in $(seq 1 60); do
     echo "Reading latest table entry"
     latest_table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "${GUID}" --row-key "ycsb_sql")
     etag=$(echo $latest_table_entry | jq .etag)
