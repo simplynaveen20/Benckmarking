@@ -152,7 +152,7 @@
         "networkInterfaceName": "[concat(parameters('projectName'), '-nic')]",
         "networkSecurityGroupName": "[concat(parameters('projectName'), '-nsg')]",
         "deploymentName": "[deployment().name]",
-		"diagnosticsLatencyThresholdInMS": "[parameters('diagnosticsLatencyThresholdInMS')]"
+        "diagnosticsLatencyThresholdInMS": "[parameters('diagnosticsLatencyThresholdInMS')]"
 		
     },
     "resources": [
