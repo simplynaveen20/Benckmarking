@@ -97,7 +97,7 @@ fi
 client_start_time=$(date -d "$client_start_time" +'%s')
 
 #Execute YCSB test
-if [ "$WRITE_ONLY_OPERATION" = true ]; then
+if [ "$WRITE_ONLY_OPERATION" = True ] || [ "$WRITE_ONLY_OPERATION" = true ]; then
   now=$(date +"%s")
   wait_interval=$(($client_start_time - $now))
   if [ $wait_interval -gt 0 ]; then
