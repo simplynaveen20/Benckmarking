@@ -8,6 +8,7 @@ echo "##########YCSB_RECORD_COUNT###########: $YCSB_RECORD_COUNT"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
 echo "##########YCSB_OPERATION_COUNT###########: $YCSB_OPERATION_COUNT"
 echo "##########VM_COUNT###########: $VM_COUNT"
+echo "##########WRITE_ONLY_OPERATION###########: $WRITE_ONLY_OPERATION"
 
 # The index of the record to start at during the Load
 insertstart=$((YCSB_RECORD_COUNT * (MACHINE_INDEX - 1)))
@@ -130,7 +131,7 @@ else
   sudo rm -f "/home/benchmarking/$VM_NAME-ycsb-load.txt"
   ##execute run phase for YCSB tests
   echo "########## Run operation for YCSB tests ###########"
-  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation=$YCSB_OPERATION recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND insertproportion=$INSERT_PROPORTION readproportion=$READ_PROPORTION updateproportion=$UPDATE_PROPORTION scanproportion=$SCAN_PROPORTION diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION sh run.sh
+  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND insertproportion=$INSERT_PROPORTION readproportion=$READ_PROPORTION updateproportion=$UPDATE_PROPORTION scanproportion=$SCAN_PROPORTION diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION sh run.sh
 fi
 
 #Copy YCSB log to storage account
