@@ -105,9 +105,11 @@ if [ "$WRITE_ONLY_OPERATION" = true ]; then
   else
     echo "Not sleeping on clients sync time $client_start_time as it already past"
   fi
+  # Records count for write only ops which start with items count created by Vm(machine_index - 1) client machine from this ops
+  recordcountForWriteOps=$((YCSB_OPERATION_COUNT * (MACHINE_INDEX - 1)))
   ##execute run phase for YCSB tests with write only workload
   echo "########## Run operation with write only workload for YCSB tests ###########"
-  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" insertproportion=1 readproportion=0 updateproportion=0 scanproportion=0 recordcount=$insertstart operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION sh run.sh
+  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" insertproportion=1 readproportion=0 updateproportion=0 scanproportion=0 recordcount=$recordcountForWriteOps operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION sh run.sh
 else
   ##execute load operation for YCSB tests
   echo "########## Load operation for YCSB tests ###########"
