@@ -91,7 +91,7 @@
                 "description": "Specifies the maximum number of operations per second"
             }
         },
-        "itemCountForWriteOps": {
+        "ycsbRecordCount": {
             "type": "int",
             "defaultValue": 1
         },
@@ -178,17 +178,14 @@
                     "workloadType": {
                         "value": "[parameters('workloadType')]"
                     },
-                    "ycsbOperation": {
-                        "value": "[parameters('ycsbOperation')]"
-                    },
                     "threads": {
                         "value": "[parameters('threads')]"
                     },
                     "targetOperationsPerSecond": {
                         "value": "[parameters('targetOperationsPerSecond')]"
                     },
-                    "itemCountForWriteOps": {
-                        "value": "[parameters('itemCountForWriteOps')]"
+                    "ycsbRecordCount": {
+                        "value": "[parameters('ycsbRecordCount')]"
                     },
                     "ycsbOperationCount": {
                         "value": "[parameters('ycsbOperationCount')]"

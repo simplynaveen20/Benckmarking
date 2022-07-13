@@ -17,20 +17,28 @@
     "vmCount": {
       "value": 1
     },
-    "itemCountForWriteOps": {
+    "ycsbRecordCount": {
       "value": 1
     },
     "ycsbOperationCount": {
       "value": 1
     },
+	,
     "threads": {
       "value": 1
     },
     "targetOperationsPerSecond": {
       "value": 1
     },
-	"ycsbOperation": {
-      "value": "load"
+    "writeOnlyOperation": {
+      "value": false
+    },
+    "diagnosticsLatencyThresholdInMS": {
+      "value": 15
+    },
+    "insertorder": {
+      "value": "ordered"
     }
   }
 }
+
