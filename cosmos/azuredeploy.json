@@ -176,7 +176,7 @@
                 "description": "Specifies request distribution"
             }
         },
-		"insertorder": {
+        "insertorder": {
             "type": "string",
             "defaultValue": "hashed",
             "metadata": {
