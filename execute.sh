@@ -96,6 +96,9 @@ fi
 ## converting client_start_time into seconds
 client_start_time=$(date -d "$client_start_time" +'%s')
 
+# Clearing log file from previous runs
+sudo rm -f /tmp/ycsb.log
+
 #Execute YCSB test
 if [ "$WRITE_ONLY_OPERATION" = True ] || [ "$WRITE_ONLY_OPERATION" = true ]; then
   now=$(date +"%s")
