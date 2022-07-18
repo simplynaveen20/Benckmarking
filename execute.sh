@@ -70,7 +70,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
 
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
-  client_start_time=$(date -u -d "1 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
+  client_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
   az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" ClientStartTime=$client_start_time SAS_URL=$result_storage_url JobStatus="Started" NoOfClientsCompleted=0 --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 5); do
@@ -149,7 +149,7 @@ sudo azcopy copy "/home/benchmarking/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
-  sleep 1s
+  sleep 5m
   cd /home/benchmarking
   mkdir "aggregation"
   cd aggregation
