@@ -154,7 +154,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   mkdir "aggregation"
   cd aggregation
   # Clearing aggregation folder from last run if applicable
-  rm *
+  sudo rm *
   index_for_regex=$(expr index "$result_storage_url" '?')
   regex_to_append="/*"
   url_first_part=$(echo $result_storage_url | cut -c 1-$((index_for_regex - 1)))
