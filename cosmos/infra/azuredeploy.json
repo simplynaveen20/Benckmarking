@@ -114,7 +114,7 @@
         },
         "testBenchGitHubBranchName": {
             "type": "string",
-            "defaultValue": "users/ratella/clean",
+            "defaultValue": "main",
             "metadata": {
                 "description": "Specifies the GitHub branch for YCSB source code repository"
             }
