@@ -114,6 +114,9 @@ fi
 ## converting client_start_time into seconds
 client_start_time=$(date -d "$client_start_time" +'%s')
 
+# Clearing log file from last run if applicable
+sudo rm -f /tmp/ycsb.log
+
 #Execute YCSB test
 if [ "$WRITE_ONLY_OPERATION" = True ] || [ "$WRITE_ONLY_OPERATION" = true ]; then
   now=$(date +"%s")
@@ -154,6 +157,8 @@ fi
 
 #Copy YCSB log to storage account
 echo "########## Copying Results to Storage ###########"
+# Clearing log file from last run if applicable
+sudo rm -f $HOME/"$VM_NAME-ycsb.log"
 cp /tmp/ycsb.log $HOME/"$VM_NAME-ycsb.log"
 sudo python3 converting_log_to_csv.py $HOME/"$VM_NAME-ycsb.log"
 sudo azcopy copy "$VM_NAME-ycsb.csv" "$result_storage_url"
@@ -165,6 +170,8 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   cd $HOME
   mkdir "aggregation"
   cd aggregation
+  # Clearing aggregation folder from last run if applicable
+  sudo rm *
   index_for_regex=$(expr index "$result_storage_url" '?')
   regex_to_append="/*"
   url_first_part=$(echo $result_storage_url | cut -c 1-$((index_for_regex - 1)))
