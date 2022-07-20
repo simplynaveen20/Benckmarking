@@ -8,12 +8,10 @@ echo "##########YCSB_OPERATION_COUNT###########: $YCSB_OPERATION_COUNT"
 echo "##########VM_COUNT###########: $VM_COUNT"
 echo "##########WRITE_ONLY_OPERATION###########: $WRITE_ONLY_OPERATION"
 
-echo "##########TEST_BENCH_GIT_BRANCH_NAME###########: $TEST_BENCH_GIT_BRANCH_NAME"
-echo "##########TEST_BENCH_GIT_REPO_URL###########: $TEST_BENCH_GIT_REPO_URL"
+echo "##########BENCHMARKING_TOOLS_BRANCH_NAME###########: $BENCHMARKING_TOOLS_BRANCH_NAME"
+echo "##########BENCHMARKING_TOOLS_URL###########: $BENCHMARKING_TOOLS_URL"
 echo "##########YCSB_GIT_BRANCH_NAME###########: $YCSB_GIT_BRANCH_NAME"
 echo "##########YCSB_GIT_REPO_URL###########: $YCSB_GIT_REPO_URL"
-
-echo "##########HOME###########: $HOME"
 
 # The index of the record to start at during the Load
 insertstart=$((YCSB_RECORD_COUNT * (MACHINE_INDEX - 1)))
@@ -30,7 +28,7 @@ sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 
 #Cloning Test Bench Repo
 echo "########## Cloning Test Bench repository ##########"
-git clone -b "$TEST_BENCH_GIT_BRANCH_NAME" --single-branch "$TEST_BENCH_GIT_REPO_URL"
+git clone -b "$BENCHMARKING_TOOLS_BRANCH_NAME" --single-branch "$BENCHMARKING_TOOLS_URL"
 mkdir /tmp/ycsb
 cp -r ./Benckmarking/cosmos/scripts/* /tmp/ycsb
 #cp -r ./Benckmarking/core/data/* /tmp/ycsb
@@ -47,6 +45,7 @@ cp -r ./azurecosmos/conf/* /tmp/ycsb
 cd /tmp/ycsb/
 
 ycsb_folder_name=ycsb-azurecosmos-binding-*-SNAPSHOT
+user_home="/home/${ADMIN_USER_NAME}"
 
 echo "########## Extracting YCSB ##########"
 tar xfvz ycsb-azurecosmos-binding*.tar.gz
@@ -141,11 +140,11 @@ else
   else
     echo "Not sleeping on clients sync time $client_start_time as it already past"
   fi
-  cp /tmp/ycsb.log $HOME/"$VM_NAME-ycsb-load.txt"
-  sudo azcopy copy $HOME/"$VM_NAME-ycsb-load.txt" "$result_storage_url"
+  cp /tmp/ycsb.log $user_home/"$VM_NAME-ycsb-load.txt"
+  sudo azcopy copy $user_home/"$VM_NAME-ycsb-load.txt" "$result_storage_url"
   # Clearing log file from above load operation
   sudo rm -f /tmp/ycsb.log
-  sudo rm -f "$HOME/$VM_NAME-ycsb-load.txt"
+  sudo rm -f "$user_home/$VM_NAME-ycsb-load.txt"
   ## Execute run phase for YCSB tests
   echo "########## Run operation for YCSB tests ###########"
   uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND insertproportion=$INSERT_PROPORTION readproportion=$READ_PROPORTION updateproportion=$UPDATE_PROPORTION scanproportion=$SCAN_PROPORTION diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER sh run.sh
@@ -154,16 +153,16 @@ fi
 #Copy YCSB log to storage account
 echo "########## Copying Results to Storage ###########"
 # Clearing log file from last run if applicable
-sudo rm -f $HOME/"$VM_NAME-ycsb.log"
-cp /tmp/ycsb.log $HOME/"$VM_NAME-ycsb.log"
-sudo python3 converting_log_to_csv.py $HOME/"$VM_NAME-ycsb.log"
+sudo rm -f $user_home/"$VM_NAME-ycsb.log"
+cp /tmp/ycsb.log $user_home/"$VM_NAME-ycsb.log"
+sudo python3 converting_log_to_csv.py $user_home/"$VM_NAME-ycsb.log"
 sudo azcopy copy "$VM_NAME-ycsb.csv" "$result_storage_url"
-sudo azcopy copy "$HOME/$VM_NAME-ycsb.log" "$result_storage_url"
+sudo azcopy copy "$user_home/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
   sleep 1s
-  cd $HOME
+  cd $user_home
   mkdir "aggregation"
   cd aggregation
   # Clearing aggregation folder from last run if applicable
@@ -173,8 +172,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   url_first_part=$(echo $result_storage_url | cut -c 1-$((index_for_regex - 1)))
   url_second_part=$(echo $result_storage_url | cut -c $((index_for_regex))-${#result_storage_url})
   new_storage_url="$url_first_part$regex_to_append$url_second_part"
-  #aggregation_dir="$Home/aggregation"
-  aggregation_dir="/home/$ADMIN_USER_NAME/aggregation"
+  aggregation_dir="$user_home/aggregation"
   sudo azcopy copy $new_storage_url $aggregation_dir --recursive=true
   sudo python3 /tmp/ycsb/$YCSB_FOLDER_NAME/aggregate_multiple_file_results.py $aggregation_dir
   sudo azcopy copy aggregation.csv "$result_storage_url"
