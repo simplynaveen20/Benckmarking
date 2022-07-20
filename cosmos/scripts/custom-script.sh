@@ -140,11 +140,12 @@ else
   else
     echo "Not sleeping on clients sync time $client_start_time as it already past"
   fi
+  sudo rm -f "$user_home/$VM_NAME-ycsb-load.txt"
   cp /tmp/ycsb.log $user_home/"$VM_NAME-ycsb-load.txt"
   sudo azcopy copy $user_home/"$VM_NAME-ycsb-load.txt" "$result_storage_url"
   # Clearing log file from above load operation
   sudo rm -f /tmp/ycsb.log
-  sudo rm -f "$user_home/$VM_NAME-ycsb-load.txt"
+
   ## Execute run phase for YCSB tests
   echo "########## Run operation for YCSB tests ###########"
   uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND insertproportion=$INSERT_PROPORTION readproportion=$READ_PROPORTION updateproportion=$UPDATE_PROPORTION scanproportion=$SCAN_PROPORTION diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER sh run.sh
