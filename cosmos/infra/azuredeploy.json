@@ -71,14 +71,14 @@
         },
         "threads": {
             "type": "int",
-            "defaultValue": 0,
+            "defaultValue": 1,
             "metadata": {
                 "description": "Specifies the threads per client"
             }
         },
         "targetOperationsPerSecond": {
             "type": "int",
-            "defaultValue": 2,
+            "defaultValue": -1,
             "metadata": {
                 "description": "Specifies the maximum number of operations per second"
             }
@@ -105,14 +105,14 @@
                 "description": "Specifies the GitHub branch for YCSB source code repository"
             }
         },
-        "testBenchGitHubRepoName": {
+        "benchmarkingToolsRepoName": {
             "type": "string",
             "defaultValue": "RaviTella/Benckmarking",
             "metadata": {
                 "description": "Specifies the GitHub Url for YCSB source code repository"
             }
         },
-        "testBenchGitHubBranchName": {
+        "benchmarkingToolsBranchName": {
             "type": "string",
             "defaultValue": "main",
             "metadata": {
@@ -161,7 +161,7 @@
         },
         "writeOnlyOperation": {
             "type": "bool",
-            "defaultValue": true,
+            "defaultValue": false,
             "metadata": {
                 "description": "Specifies writeOnlyOperation true or false, if true it will override the workload and run 100% write, transaction wont fail on single error unlike load phase"
             }
@@ -190,9 +190,10 @@
         "publicIPAddressName": "[concat(parameters('projectName'), '-ip')]",
         "networkInterfaceName": "[concat(parameters('projectName'), '-nic')]",
         "networkSecurityGroupName": "[concat(parameters('projectName'), '-nsg')]",
-        "testBenchGitHubRepoUrl": "[ concat('https://github.com/',parameters('testBenchGitHubRepoName'),'.git')]",
-        "cloudInitScriptUrl": "[concat('https://raw.githubusercontent.com/',parameters('testBenchGitHubRepoName'),'/',parameters('testBenchGitHubBranchName'),'/system/cloud-init.txt')]",
-        "vmScriptExtensionScriptUrl": "[concat('https://raw.githubusercontent.com/',parameters('testBenchGitHubRepoName'),'/',parameters('testBenchGitHubBranchName'),'/cosmos/scripts/execute.sh')]",
+        "benchmarkingToolsURL": "[ concat('https://github.com/',parameters('benchmarkingToolsRepoName'),'.git')]",
+        "cloudInitScriptUrl": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/system/cloud-init.txt')]",
+        "vmScriptExtensionScriptUrl": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/cosmos/scripts/execute.sh')]",
+        "customScriptUrl": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/cosmos/scripts/custom-script.sh')]",
         "vmScriptExtensionScriptName": "execute.sh",
         "ycsbGitHubRepoUrl": "[concat('https://github.com/',parameters('ycsbGitHubRepoName'),'.git')]"
     },
@@ -404,7 +405,7 @@
                 "settings": {
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('ADMIN_USER_NAME=',parameters('adminUsername'),' ','TEST_BENCH_GIT_REPO_URL=',variables('testBenchGitHubRepoUrl'),' ','TEST_BENCH_GIT_BRANCH_NAME=',parameters('testBenchGitHubBranchName'),' ','YCSB_GIT_REPO_URL=',variables('ycsbGitHubRepoUrl'),' ','DEPLOYMENT_NAME=',parameters('deploymentName'),' ','GUID=',parameters('guidValue'),' ','YCSB_GIT_BRANCH_NAME=',parameters('ycsbGitHubBranchName'),' ','TARGET_OPERATIONS_PER_SECOND=',parameters('targetOperationsPerSecond'),' ','THREAD_COUNT=',parameters('threads'),' ','YCSB_OPERATION_COUNT=',parameters('ycsbOperationCount'), ' ','WORKLOAD_TYPE=',parameters('workloadType'),' ','VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_CONNECTION_STRING=','\"',parameters('resultsStorageConnectionString'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','VM_COUNT=',parameters('vmCount'), ' ','DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS=',parameters('diagnosticsLatencyThresholdInMS'), ' ','YCSB_RECORD_COUNT=',parameters('ycsbRecordCount'), ' ','WRITE_ONLY_OPERATION=',parameters('writeOnlyOperation'), ' ','READ_PROPORTION=',parameters('readproportion'), ' ','SCAN_PROPORTION=',parameters('scanproportion'), ' ','UPDATE_PROPORTION=',parameters('updateproportion'), ' ','INSERT_PROPORTION=',parameters('insertproportion'), ' ','REQUEST_DISTRIBUTION=',parameters('requestdistribution'), ' ','INSERT_ORDER=',parameters('insertorder'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'bash ',variables('vmScriptExtensionScriptName'))]",
+                    "commandToExecute": "[concat('ADMIN_USER_NAME=',parameters('adminUsername'),' ','BENCHMARKING_TOOLS_URL=',variables('benchmarkingToolsURL'),' ','BENCHMARKING_TOOLS_BRANCH_NAME=',parameters('benchmarkingToolsBranchName'),' ','YCSB_GIT_REPO_URL=',variables('ycsbGitHubRepoUrl'),' ','DEPLOYMENT_NAME=',parameters('deploymentName'),' ','GUID=',parameters('guidValue'),' ','YCSB_GIT_BRANCH_NAME=',parameters('ycsbGitHubBranchName'),' ','TARGET_OPERATIONS_PER_SECOND=',parameters('targetOperationsPerSecond'),' ','THREAD_COUNT=',parameters('threads'),' ','YCSB_OPERATION_COUNT=',parameters('ycsbOperationCount'), ' ','WORKLOAD_TYPE=',parameters('workloadType'),' ','VM_NAME=',variables('vmName'),copyIndex(1), ' ','RESULT_STORAGE_CONNECTION_STRING=','\"',parameters('resultsStorageConnectionString'),'\"',' ','COSMOS_URI=',parameters('cosmosURI'), ' ','COSMOS_KEY=',parameters('cosmosKey'), ' ','VM_COUNT=',parameters('vmCount'), ' ','DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS=',parameters('diagnosticsLatencyThresholdInMS'), ' ','YCSB_RECORD_COUNT=',parameters('ycsbRecordCount'), ' ','WRITE_ONLY_OPERATION=',parameters('writeOnlyOperation'), ' ','READ_PROPORTION=',parameters('readproportion'), ' ','SCAN_PROPORTION=',parameters('scanproportion'), ' ','UPDATE_PROPORTION=',parameters('updateproportion'), ' ','INSERT_PROPORTION=',parameters('insertproportion'), ' ','REQUEST_DISTRIBUTION=',parameters('requestdistribution'), ' ','INSERT_ORDER=',parameters('insertorder'), ' ','CUSTOM_SCRIPT_URL=',variables('customScriptUrl'), ' ','MACHINE_INDEX=',copyIndex(1), ' ', 'bash ',variables('vmScriptExtensionScriptName'))]",
                     "fileUris": [ "[concat(variables('vmScriptExtensionScriptURL'))]" ]
 
                 }
