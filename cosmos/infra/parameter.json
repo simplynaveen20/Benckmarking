@@ -2,9 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "projectName": {
-      "value": "Benchmarking"
-    },
     "adminUsername": {
       "value": ""
     },
@@ -21,31 +18,22 @@
       "value": ""
     },
     "vmCount": {
-      "value": 2
+      "value": 1
     },
     "ycsbRecordCount": {
       "value": 1
     },
     "ycsbOperationCount": {
-      "value": 4
+      "value": 1
     },
     "threads": {
-      "value": 2
+      "value": 1
     },
     "targetOperationsPerSecond": {
-      "value": 2
+      "value": 1
     },
-    "ycsbGitHubRepoName": {
-      "value": "simplynaveen20/YCSB"
-    },
-    "ycsbGitHubBranchName": {
-      "value": "addingDockerScripts"
-    },
-    "testBenchGitHubRepoName": {
-      "value": "RaviTella/Benckmarking"
-    },
-    "testBenchGitHubBranchName": {
-      "value": ""
+    "writeOnlyOperation": {
+      "value": false
     }
   }
 }
