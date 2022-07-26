@@ -33,6 +33,10 @@ if [ ! -z "$insertorder" ]; then
    sed -i "$ ainsertorder=$insertorder" workloads/$workload
 fi
 
+if [ ! -z "$fieldcount" ]; then
+   sed -i "$ afieldcount=$fieldcount" workloads/$workload
+fi
+
 if [ ! -z "$readproportion" ]; then
    sed -i "s/^[#]*\s*readproportion=.*/readproportion=$readproportion/" workloads/$workload
 fi
