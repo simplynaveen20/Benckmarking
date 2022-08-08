@@ -83,8 +83,8 @@ if [ $MACHINE_INDEX -eq 1 ]; then
 
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
 
-  client_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%S') # date in ISO 8601 format
-  az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" ClientStartTime=$client_start_time SAS_URL=$result_storage_url JobStatus="Started" NoOfClientsCompleted=0 --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  client_start_time=$(date -u -d "1 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
+  az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" ClientStartTime=$client_start_time ClientFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 5); do
     table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
@@ -162,7 +162,7 @@ sudo azcopy copy "$user_home/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Waiting on VM1 for 5 min"
-  sleep 5m
+  sleep 1m
   cd $user_home
   mkdir "aggregation"
   cd aggregation
@@ -187,8 +187,9 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
   no_of_clients_completed=$(echo "$no_of_clients_completed" | tr -d '"')
   no_of_clients_completed=$((no_of_clients_completed + 1))
+  finish_time="$(date '+%Y-%m-%dT%H:%M:%SZ')"
   echo "Updating latest table entry with incremented NoOfClientsCompleted"
-  az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
+  az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" ClientFinishTime=$finish_time JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
 else
   for j in $(seq 1 60); do
     echo "Reading latest table entry"
