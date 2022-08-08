@@ -122,14 +122,14 @@
         },
         "ycsbGitHubRepoName": {
             "type": "string",
-            "defaultValue": "simplynaveen20/YCSB",
+            "defaultValue": "Azure/YCSB",
             "metadata": {
                 "description": "Specifies the GitHub Url for YCSB source code repository"
             }
         },
         "ycsbGitHubBranchName": {
             "type": "string",
-            "defaultValue": "addingDockerScripts",
+            "defaultValue": "main",
             "metadata": {
                 "description": "Specifies the GitHub branch for YCSB source code repository"
             }
