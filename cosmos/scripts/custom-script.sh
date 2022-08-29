@@ -20,11 +20,6 @@ recordcount=$((YCSB_RECORD_COUNT * MACHINE_INDEX))
 # Record count for Run. Since we run read workload after load this is the total number of records loaded by all VMs/clients during load.
 totalrecordcount=$((YCSB_RECORD_COUNT * VM_COUNT))
 
-#Install Software
-echo "########## Installing azcopy ###########"
-wget https://aka.ms/downloadazcopy-v10-linux
-tar -xvf downloadazcopy-v10-linux
-sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 
 #Cloning Test Bench Repo
 echo "########## Cloning Test Bench repository ##########"
@@ -67,9 +62,10 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   echo "########## Creating SAS URL for result storage container ###########"
   end=$(date -u -d "30 days" '+%Y-%m-%dT%H:%MZ')
   current_time="$(date '+%Y-%m-%d-%Hh%Mm%Ss')"
-  az storage container create -n "result-$current_time" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  results_container_name="$DEPLOYMENT_NAME-$current_time"
+  az storage container create -n $results_container_name --connection-string $RESULT_STORAGE_CONNECTION_STRING
 
-  sas=$(az storage container generate-sas -n "result-$current_time" --connection-string $RESULT_STORAGE_CONNECTION_STRING --https-only --permissions dlrw --expiry $end -o tsv)
+  sas=$(az storage container generate-sas -n $results_container_name --connection-string $RESULT_STORAGE_CONNECTION_STRING --https-only --permissions dlrw --expiry $end -o tsv)
 
   arr_connection=(${RESULT_STORAGE_CONNECTION_STRING//;/ })
 
@@ -81,7 +77,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   arr_account_string=(${account_string//=/ })
   account_name=${arr_account_string[1]}
 
-  result_storage_url="${protocol}://${account_name}.blob.core.windows.net/result-${current_time}?${sas}"
+  result_storage_url="${protocol}://${account_name}.blob.core.windows.net/${results_container_name}?${sas}"
 
   job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
   az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
@@ -116,7 +112,7 @@ sudo rm -f /tmp/ycsb.log
 if [ "$WRITE_ONLY_OPERATION" = True ] || [ "$WRITE_ONLY_OPERATION" = true ]; then
   now=$(date +"%s")
   wait_interval=$(($job_start_time - $now))
-  if [ $wait_interval -gt 0 ]; then
+  if [ $wait_interval -gt 0 ] && [ $VM_COUNT -gt 1 ]; then
     echo "Sleeping for $wait_interval second to sync with other clients"
     sleep $wait_interval
   else
@@ -135,7 +131,7 @@ else
   fi
   now=$(date +"%s")
   wait_interval=$(($job_start_time - $now))
-  if [ $wait_interval -gt 0 ]; then
+    if [ $wait_interval -gt 0 ] && [ $VM_COUNT -gt 1 ]; then
     echo "Sleeping for $wait_interval second to sync with other clients"
     sleep $wait_interval
   else
@@ -162,8 +158,10 @@ sudo azcopy copy "$VM_NAME-ycsb.csv" "$result_storage_url"
 sudo azcopy copy "$user_home/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
-  echo "Waiting on VM1 for 5 min"
-  sleep 5m
+   if [ $VM_COUNT -gt 1 ]; then 
+     echo "Waiting on Master for 5 min"
+     sleep 5m
+   fi  
   cd $user_home
   mkdir "aggregation"
   cd aggregation
@@ -191,6 +189,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   finish_time="$(date '+%Y-%m-%dT%H:%M:%SZ')"
   echo "Updating latest table entry with incremented NoOfClientsCompleted"
   az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobFinishTime=$finish_time JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
+  echo "Job finished at $finish_time"
 else
   for j in $(seq 1 60); do
     echo "Reading latest table entry"
@@ -207,6 +206,7 @@ else
       echo "Hit race condition on table entry for updating no_of_clients_completed"
       sleep 1s
     else
+      echo "Task finished sucessfully"
       break
     fi
   done
