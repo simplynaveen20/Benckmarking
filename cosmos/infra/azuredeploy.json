@@ -231,8 +231,8 @@
             }
         }
     },
-    "variables": {     
-       "vmName": "[concat(parameters('projectName'), '-vm')]",
+    "variables": {
+        "vmName": "[concat(parameters('projectName'), '-vm')]",
         "publicIPAddressName": "[concat(parameters('projectName'), '-ip')]",
         "networkInterfaceName": "[concat(parameters('projectName'), '-nic')]",
         "networkSecurityGroupName": "[concat(parameters('projectName'), '-nsg')]",
@@ -250,21 +250,7 @@
             "name": "[variables('networkSecurityGroupName')]",
             "location": "[parameters('location')]",
             "properties": {
-                "securityRules": [
-                    {
-                        "name": "SSH",
-                        "properties": {
-                            "protocol": "TCP",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Deny",
-                            "priority": 102,
-                            "direction": "Inbound"
-                        }
-                    }
-                ]
+                "securityRules": []
             }
         },
         {
