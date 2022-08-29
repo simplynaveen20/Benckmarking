@@ -1,3 +1,2 @@
 # ignore compiled byte code
-**/azuredeploy_local*.json
-**/parameter_local*.json
+**/*local*
