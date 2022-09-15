@@ -93,11 +93,11 @@ fi
 
 # CONNECTION OPTIONS
 if [ ! -z "$useGateway" ]; then
-   sed -i "s/^[#]*\s*azurecosmos.useGateway\ =.*/azurecosmos.userAgent\ =\ $useGateway/" azurecosmos.properties
+   sed -i "s/^[#]*\s*azurecosmos.useGateway\ =.*/azurecosmos.useGateway\ =\ $useGateway/" azurecosmos.properties
 fi
 
 if [ ! -z "$consistencyLevel" ]; then
-   sed -i "s/^[#]*\s*azurecosmos.consistencyLevel\ =.*/azurecosmos.userAgent\ =\ $consistencyLevel/" azurecosmos.properties
+   sed -i "s/^[#]*\s*azurecosmos.consistencyLevel\ =.*/azurecosmos.consistencyLevel\ =\ $consistencyLevel/" azurecosmos.properties
 fi
 
 if [ ! -z "$maxRetryAttemptsOnThrottledRequests" ]; then

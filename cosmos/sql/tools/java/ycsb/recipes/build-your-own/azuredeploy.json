@@ -222,15 +222,14 @@
             }
         }
     },
-    "variables": {    
-        "templateURL": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/cosmos/infra/azuredeploy.json')]",
-              "deploymentName": "YCSBBenchmarking"
+    "variables": {
+        "templateURL": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/cosmos/infra/azuredeploy.json')]"
     },
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-                  "name": "[concat(variables('deploymentName'),'LinkedTemplate')]",
+            "name": "[concat(deployment().name,'LinkedTemplate')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -243,9 +242,6 @@
                     },
                     "location": {
                         "value": "[parameters('location')]"
-                    },
-                    "deploymentName": {
-                       "value": "[variables('deploymentName')]"
                     },
                     "adminUsername": {
                         "value": "[parameters('adminUsername')]"

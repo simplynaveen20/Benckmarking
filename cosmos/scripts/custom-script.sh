@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo "##########DEPLOYMENT_NAME###########: $DEPLOYMENT_NAME"
 echo "##########VM NAME###########: $VM_NAME"
 echo "##########YCSB_RECORD_COUNT###########: $YCSB_RECORD_COUNT"
 echo "##########MACHINE_INDEX###########: $MACHINE_INDEX"
@@ -19,6 +18,7 @@ insertstart=$((YCSB_RECORD_COUNT * (MACHINE_INDEX - 1)))
 recordcount=$((YCSB_RECORD_COUNT * MACHINE_INDEX))
 # Record count for Run. Since we run read workload after load this is the total number of records loaded by all VMs/clients during load.
 totalrecordcount=$((YCSB_RECORD_COUNT * VM_COUNT))
+benchmarkname=ycsbbenchmarking
 
 
 #Cloning Test Bench Repo
@@ -51,18 +51,18 @@ cp ./converting_log_to_csv.py ./$ycsb_folder_name
 cd ./$ycsb_folder_name
 
 if [ $MACHINE_INDEX -eq 1 ]; then
-  table_exist=$(az storage table exists --name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING | jq '.exists')
+  table_exist=$(az storage table exists --name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING | jq '.exists')
   if [ "$table_exist" = true ]; then
-    echo "${DEPLOYMENT_NAME}Metadata already exists"
+    echo "${benchmarkname}Metadata already exists"
   else
-    az storage table create --name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+    az storage table create --name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
   fi
 
   ## Creating SAS URL for result storage container
   echo "########## Creating SAS URL for result storage container ###########"
   end=$(date -u -d "30 days" '+%Y-%m-%dT%H:%MZ')
   current_time="$(date '+%Y-%m-%d-%Hh%Mm%Ss')"
-  results_container_name="$DEPLOYMENT_NAME-$current_time"
+  results_container_name="$benchmarkname-$current_time"
   az storage container create -n $results_container_name --connection-string $RESULT_STORAGE_CONNECTION_STRING
 
   sas=$(az storage container generate-sas -n $results_container_name --connection-string $RESULT_STORAGE_CONNECTION_STRING --https-only --permissions dlrw --expiry $end -o tsv)
@@ -80,10 +80,10 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/${results_container_name}?${sas}"
 
   job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
-  az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 5); do
-    table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
+    table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
     if [ -z "$table_entry" ]; then
       echo "sleeping for 1 min, table row not availble yet"
       sleep 1m
@@ -122,12 +122,12 @@ if [ "$WRITE_ONLY_OPERATION" = True ] || [ "$WRITE_ONLY_OPERATION" = true ]; the
   recordcountForWriteOps=$((YCSB_OPERATION_COUNT * MACHINE_INDEX))
   ## Execute run phase for YCSB tests with write only workload
   echo "########## Run operation with write only workload for YCSB tests ###########"
-  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" insertproportion=1 readproportion=0 updateproportion=0 scanproportion=0 recordcount=$recordcountForWriteOps operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER includeExceptionStackInLog=$INCLUDE_EXCEPTION_STACK fieldcount=$FIELD_COUNT appInsightConnectionString=$APP_INSIGHT_CONN_STR sh run.sh
+  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" insertproportion=1 readproportion=0 updateproportion=0 scanproportion=0 recordcount=$recordcountForWriteOps operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND useGateway=$USE_GATEWAY diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER includeExceptionStackInLog=$INCLUDE_EXCEPTION_STACK fieldcount=$FIELD_COUNT appInsightConnectionString=$APP_INSIGHT_CONN_STR sh run.sh
 else
   if [ "$SKIP_LOAD_PHASE" = False ] || [ "$SKIP_LOAD_PHASE" = false ]; then
     ## Execute load operation for YCSB tests
     echo "########## Load operation for YCSB tests ###########"
-    uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="load" recordcount=$recordcount insertstart=$insertstart insertcount=$YCSB_RECORD_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER includeExceptionStackInLog=$INCLUDE_EXCEPTION_STACK fieldcount=$FIELD_COUNT appInsightConnectionString=$APP_INSIGHT_CONN_STR sh run.sh
+    uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="load" recordcount=$recordcount insertstart=$insertstart insertcount=$YCSB_RECORD_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND useGateway=$USE_GATEWAY diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER includeExceptionStackInLog=$INCLUDE_EXCEPTION_STACK fieldcount=$FIELD_COUNT appInsightConnectionString=$APP_INSIGHT_CONN_STR sh run.sh
   fi
   now=$(date +"%s")
   wait_interval=$(($job_start_time - $now))
@@ -145,7 +145,7 @@ else
 
   ## Execute run phase for YCSB tests
   echo "########## Run operation for YCSB tests ###########"
-  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND insertproportion=$INSERT_PROPORTION readproportion=$READ_PROPORTION updateproportion=$UPDATE_PROPORTION scanproportion=$SCAN_PROPORTION diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER includeExceptionStackInLog=$INCLUDE_EXCEPTION_STACK fieldcount=$FIELD_COUNT appInsightConnectionString=$APP_INSIGHT_CONN_STR sh run.sh
+  uri=$COSMOS_URI primaryKey=$COSMOS_KEY workload_type=$WORKLOAD_TYPE ycsb_operation="run" recordcount=$totalrecordcount operationcount=$YCSB_OPERATION_COUNT threads=$THREAD_COUNT target=$TARGET_OPERATIONS_PER_SECOND insertproportion=$INSERT_PROPORTION readproportion=$READ_PROPORTION updateproportion=$UPDATE_PROPORTION scanproportion=$SCAN_PROPORTION useGateway=$USE_GATEWAY diagnosticsLatencyThresholdInMS=$DIAGNOSTICS_LATENCY_THRESHOLD_IN_MS requestdistribution=$REQUEST_DISTRIBUTION insertorder=$INSERT_ORDER includeExceptionStackInLog=$INCLUDE_EXCEPTION_STACK fieldcount=$FIELD_COUNT appInsightConnectionString=$APP_INSIGHT_CONN_STR sh run.sh
 fi
 
 #Copy YCSB log to storage account
@@ -179,7 +179,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
 
   #Updating table entry to change JobStatus to 'Finished' and increment NoOfClientsCompleted
   echo "Reading latest table entry"
-  latest_table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
+  latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
   etag=$(echo $latest_table_entry | jq .etag)
   etag=${etag:1:-1}
   etag=$(echo "$etag" | tr -d '\')
@@ -188,12 +188,12 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   no_of_clients_completed=$((no_of_clients_completed + 1))
   finish_time="$(date '+%Y-%m-%dT%H:%M:%SZ')"
   echo "Updating latest table entry with incremented NoOfClientsCompleted"
-  az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobFinishTime=$finish_time JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
-  echo "Job finished at $finish_time"
+  az storage entity merge --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobFinishTime=$finish_time JobStatus="Finished" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag
+  echo "Job finished sucessfully at $finish_time"
 else
   for j in $(seq 1 60); do
     echo "Reading latest table entry"
-    latest_table_entry=$(az storage entity show --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
+    latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
     etag=$(echo $latest_table_entry | jq .etag)
     etag=${etag:1:-1}
     etag=$(echo "$etag" | tr -d '\')
@@ -201,7 +201,7 @@ else
     no_of_clients_completed=$(echo "$no_of_clients_completed" | tr -d '"')
     no_of_clients_completed=$((no_of_clients_completed + 1))
     echo "Updating latest table entry with incremented NoOfClientsCompleted"
-    replace_entry_result=$(az storage entity merge --table-name "${DEPLOYMENT_NAME}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag)
+    replace_entry_result=$(az storage entity merge --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" NoOfClientsCompleted=$no_of_clients_completed --if-match=$etag)
     if [ -z "$replace_entry_result" ]; then
       echo "Hit race condition on table entry for updating no_of_clients_completed"
       sleep 1s

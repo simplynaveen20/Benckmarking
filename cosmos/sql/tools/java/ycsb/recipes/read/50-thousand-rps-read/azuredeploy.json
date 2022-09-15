@@ -113,7 +113,7 @@
             "metadata": {
                 "description": "Specifies the total number of operations each client perfoms"
             }
-        },        
+        },
         "skipLoadPhase": {
             "type": "bool",
             "defaultValue": false,
@@ -186,14 +186,13 @@
         }
     },
     "variables": {
-        "templateURL": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/cosmos/infra/azuredeploy.json')]",
-        "deploymentName": "YCSBBenchmarking"
+        "templateURL": "[concat('https://raw.githubusercontent.com/',parameters('benchmarkingToolsRepoName'),'/',parameters('benchmarkingToolsBranchName'),'/cosmos/infra/azuredeploy.json')]"
     },
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('deploymentName'),'LinkedTemplate')]",
+            "name": "[concat(deployment().name,'LinkedTemplate')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -206,9 +205,6 @@
                     },
                     "location": {
                         "value": "[parameters('location')]"
-                    },
-                    "deploymentName": {
-                       "value": "[variables('deploymentName')]"
                     },
                     "resultsStorageConnectionString": {
                         "value": "[parameters('resultsStorageConnectionString')]"
@@ -255,7 +251,7 @@
                     "ycsbOperationCount": {
                         "value": "[parameters('ycsbOperationCount')]"
                     },
-                    "skipLoadPhase" : {
+                    "skipLoadPhase": {
                         "value": "[parameters('skipLoadPhase')]"
                     },
                     "ycsbGitHubRepoName": {

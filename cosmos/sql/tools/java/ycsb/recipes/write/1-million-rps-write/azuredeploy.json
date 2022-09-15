@@ -16,10 +16,6 @@
                 "description": "Specifies the location for all resources."
             }
         },
-        "deploymentName": {
-            "type": "string",
-            "defaultValue": "[deployment().name]"
-        },
         "resultsStorageConnectionString": {
             "type": "securestring",
             "metadata": {
@@ -185,7 +181,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "[concat(parameters('deploymentName'),'LinkedTemplate')]",
+            "name": "[concat(deployment().name,'LinkedTemplate')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -198,9 +194,6 @@
                     },
                     "location": {
                         "value": "[parameters('location')]"
-                    },
-                    "deploymentName": {
-                        "value": "[parameters('deploymentName')]"
                     },
                     "resultsStorageConnectionString": {
                         "value": "[parameters('resultsStorageConnectionString')]"
