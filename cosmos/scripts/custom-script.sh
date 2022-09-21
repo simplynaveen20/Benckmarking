@@ -32,9 +32,10 @@ cp -r ./Benckmarking/cosmos/scripts/* /tmp/ycsb
 echo "########## Cloning YCSB repository ##########"
 git clone -b "$YCSB_GIT_BRANCH_NAME" --single-branch "$YCSB_GIT_REPO_URL"
 
-echo "########## Building YCSB ##########"
 cd YCSB
+echo "########## Pulling Latest YCSB ##########"
 git pull
+echo "########## Building YCSB ##########"
 mvn -pl site.ycsb:azurecosmos-binding -am clean package
 cp -r ./azurecosmos/target/ycsb-azurecosmos-binding*.tar.gz /tmp/ycsb
 cp -r ./azurecosmos/conf/* /tmp/ycsb
