@@ -86,7 +86,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
    if [ $VM_COUNT -gt 1 ]; then 
      job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
    else
-     job_start_time=$(date -u '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format\
+     job_start_time=$(date -u '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
    fi
   
   az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
