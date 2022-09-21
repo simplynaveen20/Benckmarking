@@ -24,7 +24,10 @@ benchmarkname=ycsbbenchmarking
 #Cloning Test Bench Repo
 echo "########## Cloning Test Bench repository ##########"
 git clone -b "$BENCHMARKING_TOOLS_BRANCH_NAME" --single-branch "$BENCHMARKING_TOOLS_URL"
+echo "########## Pulling Latest YCSB ##########"
+git -C Benckmarking pull
 mkdir /tmp/ycsb
+rm -rf /tmp/ycsb/*
 cp -r ./Benckmarking/cosmos/scripts/* /tmp/ycsb
 #cp -r ./Benckmarking/core/data/* /tmp/ycsb
 
