@@ -34,6 +34,7 @@ git clone -b "$YCSB_GIT_BRANCH_NAME" --single-branch "$YCSB_GIT_REPO_URL"
 
 echo "########## Building YCSB ##########"
 cd YCSB
+git pull
 mvn -pl site.ycsb:azurecosmos-binding -am clean package
 cp -r ./azurecosmos/target/ycsb-azurecosmos-binding*.tar.gz /tmp/ycsb
 cp -r ./azurecosmos/conf/* /tmp/ycsb
