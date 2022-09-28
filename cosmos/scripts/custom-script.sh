@@ -189,10 +189,10 @@ if [ $MACHINE_INDEX -eq 1 ]; then
     for j in $(seq 1 12); do
       latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
       no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
+      echo "Total number of clients completed $no_of_clients_completed"
       if [ $no_of_clients_completed -ge $(($VM_COUNT - 1)) ]; then
         break
       else
-        echo "Total number of clients completed $no_of_clients_completed"
         echo "Waiting on Master for 5 min"
         sleep 5m
       fi
