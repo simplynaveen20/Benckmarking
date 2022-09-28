@@ -20,7 +20,6 @@ recordcount=$((YCSB_RECORD_COUNT * MACHINE_INDEX))
 totalrecordcount=$((YCSB_RECORD_COUNT * VM_COUNT))
 benchmarkname=ycsbbenchmarking
 
-
 #Cloning Test Bench Repo
 echo "########## Cloning Test Bench repository ##########"
 git clone -b "$BENCHMARKING_TOOLS_BRANCH_NAME" --single-branch "$BENCHMARKING_TOOLS_URL"
@@ -83,34 +82,53 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   account_name=${arr_account_string[1]}
 
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/${results_container_name}?${sas}"
-   if [ $VM_COUNT -gt 1 ]; then 
-     job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
-   else
-     job_start_time=$(date -u '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
-   fi
-  
-  az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
+  if [ $VM_COUNT -gt 1 ]; then
+    job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
+  else
+    job_start_time=$(date -u '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
+  fi
+
+  az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 NoOfClientsStarted=1 SAS_URL=$result_storage_url --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
-  for i in $(seq 1 5); do
-    table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
-    if [ -z "$table_entry" ]; then
+  for i in $(seq 1 10); do
+    latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
+    if [ -z "$latest_table_entry" ]; then
       echo "sleeping for 1 min, table row not availble yet"
       sleep 1m
       continue
     fi
-    job_start_time=$(echo $table_entry | jq .JobStartTime)
-    result_storage_url=$(echo $table_entry | jq .SAS_URL)
+    job_start_time=$(echo $latest_table_entry | jq .JobStartTime)
+    result_storage_url=$(echo $latest_table_entry | jq .SAS_URL)
     break
   done
   if [ -z "$job_start_time" ] || [ -z "$result_storage_url" ]; then
     echo "Error while getting job_start_time/result_storage_url, exiting from this machine"
     exit 1
   fi
-
+  for j in $(seq 1 60); do
+    etag=$(echo $latest_table_entry | jq .etag)
+    etag=${etag:1:-1}
+    etag=$(echo "$etag" | tr -d '\')
+    no_of_clients_started=$(echo $latest_table_entry | jq .NoOfClientsStarted)
+    no_of_clients_started=$(echo "$no_of_clients_started" | tr -d '"')
+    no_of_clients_started=$((no_of_clients_started + 1))
+    echo "Updating latest table entry with incremented NoOfClientsStarted"
+    replace_entry_result=$(az storage entity merge --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --entity PartitionKey="ycsb_sql" RowKey="${GUID}" NoOfClientsStarted=$no_of_clients_started --if-match=$etag)
+    if [ -z "$replace_entry_result" ]; then
+      echo "Hit race condition on table entry for updating no_of_clients_started"
+      sleep 1s
+    else
+      echo "NoOfClientsStarted updated"
+      break
+    fi
+     echo "Reading latest table entry for updating NoOfClientsStarted"
+     latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
+  done
   ## Removing quotes from the job_start_time and result_storage_url retrieved from table
   job_start_time=${job_start_time:1:-1}
   result_storage_url=${result_storage_url:1:-1}
 fi
+
 ## converting job_start_time into seconds
 job_start_time=$(date -d "$job_start_time" +'%s')
 
@@ -140,7 +158,7 @@ else
   fi
   now=$(date +"%s")
   wait_interval=$(($job_start_time - $now))
-    if [ $wait_interval -gt 0 ] && [ $VM_COUNT -gt 1 ]; then
+  if [ $wait_interval -gt 0 ] && [ $VM_COUNT -gt 1 ]; then
     echo "Sleeping for $wait_interval second to sync with other clients"
     sleep $wait_interval
   else
@@ -167,10 +185,19 @@ sudo azcopy copy "$VM_NAME-ycsb.csv" "$result_storage_url"
 sudo azcopy copy "$user_home/$VM_NAME-ycsb.log" "$result_storage_url"
 
 if [ $MACHINE_INDEX -eq 1 ]; then
-   if [ $VM_COUNT -gt 1 ]; then 
-     echo "Waiting on Master for 5 min"
-     sleep 5m
-   fi  
+  if [ $VM_COUNT -gt 1 ]; then
+    for j in $(seq 1 12); do
+      latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
+      no_of_clients_completed=$(echo $latest_table_entry | jq .NoOfClientsCompleted)
+      if [ $no_of_clients_completed -ge $(($VM_COUNT - 1)) ]; then
+        break
+      else
+        echo "Total number of clients completed $no_of_clients_completed"
+        echo "Waiting on Master for 5 min"
+        sleep 5m
+      fi
+    done
+  fi
   cd $user_home
   mkdir "aggregation"
   cd aggregation
@@ -201,7 +228,7 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   echo "Job finished sucessfully at $finish_time"
 else
   for j in $(seq 1 60); do
-    echo "Reading latest table entry"
+    echo "Reading latest table entry for updating NoOfClientsCompleted"
     latest_table_entry=$(az storage entity show --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING --partition-key "ycsb_sql" --row-key "${GUID}")
     etag=$(echo $latest_table_entry | jq .etag)
     etag=${etag:1:-1}
