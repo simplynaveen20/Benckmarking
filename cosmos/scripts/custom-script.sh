@@ -24,7 +24,10 @@ benchmarkname=ycsbbenchmarking
 #Cloning Test Bench Repo
 echo "########## Cloning Test Bench repository ##########"
 git clone -b "$BENCHMARKING_TOOLS_BRANCH_NAME" --single-branch "$BENCHMARKING_TOOLS_URL"
+echo "########## Pulling Latest YCSB TOOLS ##########"
+git -C Benckmarking pull
 mkdir /tmp/ycsb
+rm -rf /tmp/ycsb/*
 cp -r ./Benckmarking/cosmos/scripts/* /tmp/ycsb
 #cp -r ./Benckmarking/core/data/* /tmp/ycsb
 
@@ -32,8 +35,10 @@ cp -r ./Benckmarking/cosmos/scripts/* /tmp/ycsb
 echo "########## Cloning YCSB repository ##########"
 git clone -b "$YCSB_GIT_BRANCH_NAME" --single-branch "$YCSB_GIT_REPO_URL"
 
-echo "########## Building YCSB ##########"
 cd YCSB
+echo "########## Pulling Latest YCSB ##########"
+git pull
+echo "########## Building YCSB ##########"
 mvn -pl site.ycsb:azurecosmos-binding -am clean package
 cp -r ./azurecosmos/target/ycsb-azurecosmos-binding*.tar.gz /tmp/ycsb
 cp -r ./azurecosmos/conf/* /tmp/ycsb
@@ -78,8 +83,12 @@ if [ $MACHINE_INDEX -eq 1 ]; then
   account_name=${arr_account_string[1]}
 
   result_storage_url="${protocol}://${account_name}.blob.core.windows.net/${results_container_name}?${sas}"
-
-  job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
+   if [ $VM_COUNT -gt 1 ]; then 
+     job_start_time=$(date -u -d "5 minutes" '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
+   else
+     job_start_time=$(date -u '+%Y-%m-%dT%H:%M:%SZ') # date in ISO 8601 format
+   fi
+  
   az storage entity insert --entity PartitionKey="ycsb_sql" RowKey="${GUID}" JobStartTime=$job_start_time JobFinishTime="" JobStatus="Started" NoOfClientsCompleted=0 SAS_URL=$result_storage_url --table-name "${benchmarkname}Metadata" --connection-string $RESULT_STORAGE_CONNECTION_STRING
 else
   for i in $(seq 1 5); do
